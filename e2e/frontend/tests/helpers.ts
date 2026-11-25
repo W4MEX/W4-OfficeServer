@@ -39,7 +39,7 @@ async function waitForEditorReady(editorPage: Page, urlExt: RegExp) {
  * scoped to the editor iframe.
  */
 async function openEditorFromLink(page: Page, selector: string, urlExt: RegExp) {
-  await expect(page).toHaveTitle(/ONLYOFFICE|euro-office/i);
+  await expect(page).toHaveTitle(/W4 Office|ONLYOFFICE|euro-office/i);
 
   const newPagePromise = page.context().waitForEvent('page');
   await page.locator(selector).click();
