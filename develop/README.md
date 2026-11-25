@@ -268,6 +268,8 @@ bash develop/w4-example/apply.sh CONTAINER
 ```
 
 Replace `CONTAINER` with its name or ID from `docker ps`. Open `/example/`
-and verify the W4 title, header and tab icon. The script reloads Nginx and
+and verify the W4 title, header and tab icon. Open a document from the demo
+and verify the tab title ends in ` - W4 Office` before and after renaming it.
+The script reloads Nginx and
 restores the previous configuration if validation or reload fails. Reapply
 after recreating the container. The editor theme has its own build process.
