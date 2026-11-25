@@ -115,6 +115,14 @@ Run a building instance from its own git worktree so builds don't share `node_mo
 
 Don't trust HTTP 200 — the editor shell can load while the document download fails. `browser_navigate` to a create-new URL (`…/example/editor?fileExt=docx|xlsx|pptx|pdf`; `?fileName=` expects an existing file and fails), `browser_wait_for` a few seconds, then `browser_snapshot`/`browser_take_screenshot` to confirm the toolbar and page render with no error dialog, plus `browser_console_messages` at level `error`. If it won't open, check `ds-example_out.log` (JWT) and `converter/out.log` (download 403) — usually a JWT secret mismatch.
 
+## W4 upstream audit
+
+**W4 upstream audit** runs weekly and on request. It reports candidate updates
+and checks W4 submodule origins and branding sources. Treat the report as
+input for review and verify the built W4 artifacts before merging updates.
+If an intentional artwork update passes review, update the approved reference
+in the audit script to the commit containing the new artwork.
+
 ## Commits
 
 - Commit messages must follow the Conventional Commits v1.0.0 specification — e.g. feat(chat): add voice message playback, fix(call): handle MCU disconnect gracefully.
