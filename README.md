@@ -30,9 +30,7 @@ See the [development guide](develop/README.md) for the health check, logs and
 Nextcloud integration. Use test documents with the development setup.
 
 The development Compose file uses a prebuilt Euro-Office image. Its interface
-can show the upstream branding. The W4 editor theme lives in WebApps and needs
-to be included in the WebApps revision pinned here and selected when building
-the editor interface.
+can show the upstream branding.
 
 ## Build from source
 
@@ -49,6 +47,24 @@ See the [build requirements](build/BUILD_REQUISITES.md) and the
 [build guide](build/README.md) for image targets and cache settings. The
 [development guide](develop/README.md) explains how to rebuild a component
 inside the test container.
+
+To build with the W4 editor theme, run the
+[Prepare W4 WebApps update workflow](.github/workflows/prepare-w4-webapps.yml)
+from `main`. It builds and checks the candidate editor, then attaches a patch
+for the WebApps submodule reference. Apply the patch with
+`git apply --index w4-webapps.patch` on a new branch from `main`, review the
+staged change and submit it for review.
+
+Once the pinned WebApps revision contains the W4 theme, initialize the
+submodules and run the W4 profile from `build/`:
+
+```sh
+PRODUCT_VERSION="$(cat ../VERSION)" REGISTRY=ghcr.io/w4mex TAG=w4-local \
+  docker buildx bake --allow=fs.read=.. -f docker-bake.hcl -f w4/branding.hcl standalone --load
+```
+
+This profile selects W4 branding for the editor interface. The server welcome
+page and the example portal use their own resources.
 
 ## Contribute
 
