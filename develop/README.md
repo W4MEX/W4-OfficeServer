@@ -257,3 +257,17 @@ includes npm install + closure compiler + allfontsgen
 ```shell
 make sdkjs
 ````
+
+## W4 branding for the local demo
+
+After starting a compatible DocumentServer container with the example enabled,
+run this from the repository root with Bash and Docker:
+
+```sh
+bash develop/w4-example/apply.sh CONTAINER
+```
+
+Replace `CONTAINER` with its name or ID from `docker ps`. Open `/example/`
+and verify the W4 title, header and tab icon. The script reloads Nginx and
+restores the previous configuration if validation or reload fails. Reapply
+after recreating the container. The editor theme has its own build process.
