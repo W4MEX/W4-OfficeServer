@@ -138,4 +138,29 @@ export default async function globalSetup(): Promise<void> {
     async (res) => res.ok,
     TIMEOUT_MS,
   );
+
+  if (process.env.E2E_W4_BRANDING === 'true') {
+    const applied = spawnSync('bash', ['../develop/w4-example/apply.sh', CONTAINER_NAME], {
+      stdio: 'inherit',
+    });
+    if (applied.status !== 0) throw new Error('Could not apply W4 demo branding');
+
+    const base = process.env.E2E_BASE_URL;
+    await pollUntil(
+      'W4 demo branding',
+      `${base}/example/`,
+      async (response) =>
+        response.ok &&
+        (await response.text()).includes('<title>W4 Office Document editors</title>'),
+      30_000,
+    );
+    for (const extension of ['docx', 'xlsx', 'pptx', 'pdf']) {
+      const response = await fetch(
+        `${base}/example/editor?fileExt=${extension}&userid=w4-branding-check&lang=en`,
+      );
+      if (!response.ok || !(await response.text()).includes(`.${extension} - W4 Office</title>`)) {
+        throw new Error(`Missing W4 browser tab title for ${extension}`);
+      }
+    }
+  }
 }

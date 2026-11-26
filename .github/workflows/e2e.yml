@@ -20,7 +20,7 @@ env:
 
 jobs:
   e2e:
-    runs-on: self-hosted
+    runs-on: ${{ github.repository == 'W4MEX/W4-OfficeServer' && 'ubuntu-latest' || 'self-hosted' }}
     permissions:
       contents: read
       packages: read
@@ -41,7 +41,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -70,6 +70,7 @@ jobs:
         working-directory: e2e
         env:
           E2E_IMAGE: ${{ steps.image.outputs.ref }}
+          E2E_W4_BRANDING: ${{ github.repository == 'W4MEX/W4-OfficeServer' && 'true' || 'false' }}
         run: npm test
 
       - name: Upload Playwright report

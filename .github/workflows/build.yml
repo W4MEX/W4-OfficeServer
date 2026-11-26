@@ -9,6 +9,10 @@ permissions: {}
 on:
   workflow_call:
     inputs:
+      registry:
+        description: 'Registry namespace for images and build cache'
+        default: ghcr.io/euro-office
+        type: string
       full:
         description: 'Build every arch, brand and target; otherwise only the amd64 euro-office standalone image'
         required: true
@@ -42,7 +46,7 @@ on:
         required: false
 
 env:
-  REGISTRY: ghcr.io/euro-office
+  REGISTRY: ${{ inputs.registry }}
   CACHE_IMAGE_NAME: documentserver-build-cache
   BUILD_NUMBER: dev.1
   BUILD_ROOT: /package
@@ -198,7 +202,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
