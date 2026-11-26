@@ -425,11 +425,11 @@ jobs:
         uses: docker/bake-action@59cb1203cd42bcefd40a1b6d73b589e48c86040e # v7.5.0
         with:
           source: ./build
-          # For nextcloud-office, brand-server.hcl is appended; empty lines are
-          # filtered by bake-action so euro-office sees only the base file.
+          # Bake appends the profile for the selected brand when one is set.
           files: |
             ./docker-bake.hcl
             ${{ matrix.brand.extra_bake_files }}
+            ${{ github.repository == 'W4MEX/W4-OfficeServer' && matrix.brand.name == 'euro-office' && './w4/branding.hcl' || '' }}
           # extra_targets is either "" (euro-office) or "brand-icons," so the
           # comma-joined target list resolves correctly for both.
           targets: ${{ matrix.brand.extra_targets }}${{ needs.scope.outputs.targets }}
