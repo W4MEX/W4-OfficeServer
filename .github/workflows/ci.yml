@@ -49,7 +49,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  REGISTRY: ghcr.io/euro-office
+  REGISTRY: ${{ github.repository == 'W4MEX/W4-OfficeServer' && 'ghcr.io/w4mex' || 'ghcr.io/euro-office' }}
   IMAGE_NAME: documentserver
   CLUSTER_IMG_DOCS: cluster-docs
   CLUSTER_IMG_EXAMPLE: cluster-example
@@ -112,6 +112,7 @@ jobs:
       packages: write
     uses: $/.github/workflows/build.yml
     with:
+      registry: ${{ github.repository == 'W4MEX/W4-OfficeServer' && 'ghcr.io/w4mex' || 'ghcr.io/euro-office' }}
       full: ${{ needs.plan.outputs.full == 'true' }}
       nightly: ${{ needs.plan.outputs.nightly == 'true' }}
     secrets:
@@ -253,7 +254,7 @@ jobs:
   # :latest to the image under test by then, so there would be nothing to
   # upgrade from. PR and main builds are where :latest is genuinely the previous release.
   upgrade:
-    runs-on: self-hosted
+    runs-on: ${{ github.repository == 'W4MEX/W4-OfficeServer' && 'ubuntu-latest' || 'self-hosted' }}
     needs: build
     if: |
       !cancelled() &&
@@ -281,7 +282,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
