@@ -1,0 +1,81 @@
+# SPDX-FileCopyrightText: 2026 W4
+# SPDX-License-Identifier: AGPL-3.0-only
+name: Prepare W4 WebApps update
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    if: github.repository == 'W4MEX/W4-OfficeServer' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Resolve the W4 WebApps revision
+        id: webapps
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WEB_REPO: W4MEX/W4-Office-WebApps
+        run: |
+          set -euo pipefail
+          test "$(git config -f .gitmodules --get submodule.web-apps.url)" = "https://github.com/$WEB_REPO.git"
+          previous=$(git rev-parse HEAD:web-apps)
+          candidate=$(gh api "repos/$WEB_REPO/commits/main" --jq .sha)
+          [[ "$candidate" =~ ^[0-9a-f]{40}$ ]]
+          comparison=$(gh api "repos/$WEB_REPO/compare/$previous...$candidate?per_page=1" --jq .status)
+          case "$comparison" in
+            identical)
+              echo "WebApps is already up to date."
+              exit 0
+              ;;
+            ahead) ;;
+            *) echo "::error::The WebApps update is not a fast-forward."; exit 1 ;;
+          esac
+          gh api "repos/$WEB_REPO/contents/theme/w4-office/meta/config.json?ref=$candidate" \
+            --jq .content | base64 --decode |
+            jq -e '.app_title == "W4 Office" and .publisher_name == "W4"' >/dev/null
+          echo "sha=$candidate" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.webapps.outputs.sha != ''
+        with:
+          repository: W4MEX/W4-Office-WebApps
+          ref: ${{ steps.webapps.outputs.sha }}
+          path: web-apps
+          persist-credentials: false
+
+      - name: Build and check the W4 editor
+        if: steps.webapps.outputs.sha != ''
+        working-directory: build
+        run: |
+          set -euo pipefail
+          export PRODUCT_VERSION=$(cat ../VERSION)
+          docker buildx bake --allow=fs.read=.. -f docker-bake.hcl -f w4/branding.hcl web-apps --load \
+            --set web-apps.tags=w4-webapps-validation:local \
+            --set 'web-apps.cache-from=' --set 'web-apps.cache-to='
+          docker run --rm --network none --entrypoint grep w4-webapps-validation:local \
+            -Fq 'W4 Office' /package/web-apps/apps/documenteditor/main/index.html
+
+      - name: Prepare a patch for human review
+        if: steps.webapps.outputs.sha != ''
+        env:
+          CANDIDATE: ${{ steps.webapps.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git update-index --cacheinfo "160000,$CANDIDATE,web-apps"
+          test "$(git diff --cached --name-only)" = web-apps
+          git diff --cached --full-index --submodule=short -- web-apps > "$RUNNER_TEMP/w4-webapps.patch"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.webapps.outputs.sha != ''
+        with:
+          name: w4-webapps-update
+          path: ${{ runner.temp }}/w4-webapps.patch
+          if-no-files-found: error

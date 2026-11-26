@@ -31,6 +31,11 @@ The Nextcloud integration app lives in the **sibling repo `eurooffice-nextcloud`
 - **Always** verify that `AGENTS.md` is updated if you modify workspace-level developer workflows.
 - **Never** update submodule refs manually via a PR — submodule bumps are handled by an automated GitHub Action.
 
+For a WebApps-only update on W4-OfficeServer, run **Prepare W4 WebApps update**
+from `main`. The workflow verifies the W4 editor build and supplies the gitlink
+patch for a human to review and submit. Use the `build/w4/branding.hcl` overlay
+to build the server with the W4 editor theme.
+
 ## Build & run a test server (Docker)
 
 The dev environment in `develop/` runs a full document server from a prebuilt image. Individual components are rebuilt *inside* the container — never rebuild the docker image to test a change. The repo is bind-mounted at `/develop` in the container, so edits on the host are immediately visible inside.
