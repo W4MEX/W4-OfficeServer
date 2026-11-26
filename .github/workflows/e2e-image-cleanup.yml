@@ -11,7 +11,7 @@ permissions:
   packages: write
 
 env:
-  ORG: euro-office
+  ORG: ${{ github.repository == 'W4MEX/W4-OfficeServer' && 'w4mex' || 'euro-office' }}
   PACKAGE: documentserver-build-cache
 
 jobs:
